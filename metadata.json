@@ -1,0 +1,6 @@
+{
+  "name": "ContextOS",
+  "description": "A premium, production-grade AI engineering workstation for context management, dual-webhook operations, and Cognee memory visualization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
