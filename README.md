@@ -405,7 +405,7 @@ contextos/
 
 ## 🎬 Demo Video
 
-🎥 **[Watch the ContextOS Demo](https://youtu.be/demo-video-link)**
+🎥 **[Watch the ContextOS Demo](https://youtu.be/Form7S-_eSc?si=S-a6zicu2SfxAf_G)**
 
 *Coming soon – See the full workflow in action!*
 
