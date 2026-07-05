@@ -51,15 +51,22 @@ export default function RightPanel({
     };
     
     // 💡 1. TARGET CORRECT SOURCE PROJECT CONTEXT DYNAMICALLY
-    let dynamicProjectSource = "jwt-auth-server"; 
-    if (text.toLowerCase().includes("dynamic-payment-gateway") || text.toLowerCase().includes("payment")) {
-      dynamicProjectSource = "dynamic-payment-gateway";
+    let dynamicProjectSource = "Unknown Project"; 
+    const projectHeaderMatch = text.match(/\*\*npm dependencies.*?by\s+[`"']?([^`"'\s\n★]+)[`"']?\*\*/i) ||
+                               text.match(/Build application\s+([a-zA-Z0-9_-]+)/i) ||
+                               text.match(/"name":\s*["']([^"']+)["']/i);
+    if (projectHeaderMatch && projectHeaderMatch[1]) {
+      dynamicProjectSource = projectHeaderMatch[1].trim().replace(/[`"']/g, '');
     } else {
-      const projectHeaderMatch = text.match(/\*\*npm dependencies.*?by\s+[`"']?([^`"'\s\n★]+)[`"']?\*\*/i) ||
-                                 text.match(/Build application\s+([a-zA-Z0-9_-]+)/i) ||
-                                 text.match(/"name":\s*["']([^"']+)["']/i);
-      if (projectHeaderMatch && projectHeaderMatch[1]) {
-        dynamicProjectSource = projectHeaderMatch[1].trim().replace(/[`"']/g, '');
+      const firstLine = text.trim().split('\n')[0];
+      if (firstLine) {
+        const parts = firstLine.split(/\s+(?:REQUIRES|uses)\s+/i);
+        if (parts[0] && parts[0].trim()) {
+          const possibleName = parts[0].replace(/[-*`•]/g, '').trim();
+          if (possibleName && possibleName.length > 2 && !possibleName.includes(" ")) {
+            dynamicProjectSource = possibleName;
+          }
+        }
       }
     }
 

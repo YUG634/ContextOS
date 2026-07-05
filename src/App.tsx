@@ -32,53 +32,173 @@ import {
 import { getDynamicMockResponse } from "./components/MockData";
 
 // Robust helper to extract full text context from various n8n webhook response structures
-export function getBuildSummary(query: string, rawSummary: string) {
-  let projectName = "contextos-service";
-  const queryLower = query.toLowerCase();
-  if (queryLower.includes("auth") || queryLower.includes("jwt") || queryLower.includes("secure")) {
-    projectName = "jwt-auth-server";
-  } else if (queryLower.includes("micro") || queryLower.includes("topo") || queryLower.includes("graph")) {
-    projectName = "microservices-topology-orchestrator";
-  } else if (queryLower.includes("route") || queryLower.includes("visual") || queryLower.includes("telemetry") || queryLower.includes("d3")) {
-    projectName = "telemetry-visual-router-spec";
-  } else {
-    const words = query.split(/\s+/).filter(w => w.length > 2);
-    if (words.length > 0) {
-      projectName = words.slice(0, 2).join("-").toLowerCase().replace(/[^a-z0-9-]/g, "");
-    }
-  }
-
+export function getBuildSummary(query: string, rawSummary: string, payload?: any) {
   const files: string[] = [];
-  if (rawSummary.includes('===FILE:')) {
+  const fileMap: { [key: string]: string } = {};
+
+  if (rawSummary && rawSummary.includes('===FILE:')) {
     const fileBlocks = rawSummary.split('===FILE:');
     fileBlocks.forEach((block, idx) => {
       if (idx === 0) return;
       const lines = block.trim().split('\n');
-      const fileName = lines[0].trim();
-      if (fileName) files.push(fileName);
+      const firstLine = lines[0].trim();
+      const fileName = firstLine.replace(/^===|===$/g, '').trim();
+      const fileContent = lines.slice(1).join('\n').trim();
+      if (fileName) {
+        files.push(fileName);
+        fileMap[fileName] = fileContent;
+      }
     });
   }
 
-  if (files.length === 0) {
-    if (projectName.includes("auth")) {
-      files.push("server.ts", "middleware/auth.ts", "package.json", "drizzle.config.ts");
-    } else if (projectName.includes("microservices")) {
-      files.push("docker-compose.yml", "gateway.ts", "services/auth.ts", "services/db.ts");
-    } else {
-      files.push("index.ts", "schema.ts", "package.json", "README.md");
+  // Fallback filename extraction if no ===FILE: blocks are present
+  if (files.length === 0 && rawSummary) {
+    const fileRegex = /`([^`\s\n]+\.(?:ts|tsx|js|jsx|json|yml|yaml|md|dockerfile|sh))`|([a-zA-Z0-9_-]+\.(?:ts|tsx|js|jsx|json|yml|yaml|md|sh))\b/gi;
+    let match;
+    const seenFiles = new Set<string>();
+    while ((match = fileRegex.exec(rawSummary)) !== null) {
+      const matchedFile = (match[1] || match[2]).trim();
+      const cleanFile = matchedFile.replace(/^[./\\:]+/, "");
+      if (cleanFile && cleanFile.length > 2 && !seenFiles.has(cleanFile)) {
+        seenFiles.add(cleanFile);
+        files.push(cleanFile);
+      }
     }
   }
 
-  let components: string[] = [];
-  if (projectName.includes("auth")) {
-    components = ["JwtValidator", "TokenRevocationCache", "UserAuthenticator", "RoleMiddleware"];
-  } else if (projectName.includes("microservices")) {
-    components = ["ReverseProxyGateway", "ServiceDiscovery", "TelemetryAgent", "LoadBalancer"];
-  } else if (projectName.includes("telemetry") || projectName.includes("route")) {
-    components = ["D3ForceGraph", "RouterConfigNode", "LinkWeightCalculator", "MetricStreamer"];
-  } else {
-    components = ["CoreEngine", "DataIngressAdapter", "ContextIndexer"];
+  // Extract package.json name field if present
+  let packageJsonName = "";
+  if (fileMap["package.json"]) {
+    try {
+      const match = fileMap["package.json"].match(/"name"\s*:\s*"([^"]+)"/);
+      if (match && match[1]) {
+        packageJsonName = match[1].trim();
+      } else {
+        const parsed = JSON.parse(fileMap["package.json"]);
+        if (parsed && parsed.name) {
+          packageJsonName = parsed.name.trim();
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
   }
+
+  // Extract project name dynamically from payload or package.json or safe fallback
+  let projectName = "Unknown Project";
+  if (payload) {
+    if (payload.projectId) {
+      projectName = payload.projectId;
+    } else if (payload.payload && payload.payload.projectId) {
+      projectName = payload.payload.projectId;
+    } else if (payload.projectName) {
+      projectName = payload.projectName;
+    }
+  }
+
+  if (projectName === "Unknown Project" || !projectName) {
+    if (packageJsonName) {
+      projectName = packageJsonName;
+    } else if (query) {
+      const cleanQuery = query.toLowerCase().trim();
+      const words = cleanQuery.split(/\s+/).filter(w => w.length > 2);
+      const nameWords = words.filter(w => !["build", "create", "generate", "implement", "add", "make", "a", "an", "the"].includes(w));
+      if (nameWords.length > 0) {
+        projectName = nameWords.slice(0, 3).join("-").replace(/[^a-z0-9-]/g, "");
+      }
+    }
+  }
+
+  if (!projectName) {
+    projectName = "Unknown Project";
+  }
+
+  // Dynamic component/chip extraction
+  const componentsSet = new Set<string>();
+
+  // Parse package.json dependencies
+  if (fileMap["package.json"]) {
+    try {
+      const parsed = JSON.parse(fileMap["package.json"]);
+      if (parsed.dependencies) {
+        Object.keys(parsed.dependencies).forEach(dep => componentsSet.add(dep));
+      }
+      if (parsed.devDependencies) {
+        Object.keys(parsed.devDependencies).forEach(dep => componentsSet.add(dep));
+      }
+    } catch (e) {
+      const depRegex = /"([^"]+)"\s*:\s*"[^"]+"/g;
+      let match;
+      while ((match = depRegex.exec(fileMap["package.json"])) !== null) {
+        const dep = match[1];
+        if (!["name", "version", "description", "main", "scripts", "dependencies", "devDependencies", "type", "license"].includes(dep)) {
+          componentsSet.add(dep);
+        }
+      }
+    }
+  }
+
+  // Extract from files
+  files.forEach(f => {
+    const parts = f.split("/");
+    const last = parts[parts.length - 1];
+    const cleanName = last.split(".")[0];
+    if (cleanName && !["index", "package", "README", "tsconfig", "server"].includes(cleanName.toLowerCase())) {
+      componentsSet.add(cleanName);
+    }
+    if (parts.length > 1) {
+      const dir = parts[0];
+      if (["services", "middleware", "routes", "controllers", "models", "db"].includes(dir.toLowerCase())) {
+        componentsSet.add(dir);
+      }
+    }
+  });
+
+  // Extract PascalCase or key camelCase words from summary/rawContent
+  if (rawSummary) {
+    const backtickRegex = /`([a-zA-Z0-9_-]+)`/g;
+    let match;
+    while ((match = backtickRegex.exec(rawSummary)) !== null) {
+      const word = match[1];
+      if (word.length >= 4 && !files.includes(word) && !word.includes(".")) {
+        const isPascal = /^[A-Z][a-zA-Z0-9]+/.test(word);
+        const hasSuffix = /(service|controller|router|validator|client|adapter|engine|middleware|db|database|auth|proxy|discovery|manager)/i.test(word);
+        if (isPascal || hasSuffix) {
+          componentsSet.add(word);
+        }
+      }
+    }
+
+    const pascalRegex = /\b([A-Z][a-get-z0-9]+[A-Z][a-zA-Z0-9]+)\b/g;
+    let pMatch;
+    while ((pMatch = pascalRegex.exec(rawSummary)) !== null) {
+      const word = pMatch[1];
+      if (word.length >= 4 && !["package.json", "README.md"].includes(word)) {
+        componentsSet.add(word);
+      }
+    }
+  }
+
+  let components = Array.from(componentsSet);
+
+  if (components.length === 0) {
+    if (projectName && projectName !== "Unknown Project") {
+      const cleanProj = projectName.replace(/[^a-zA-Z0-9]/g, " ");
+      const words = cleanProj.split(/\s+/).filter(Boolean);
+      if (words.length > 0) {
+        const capitalized = words.map(w => w.charAt(0).toUpperCase() + w.slice(1));
+        const base = capitalized.join("");
+        components.push(`${base}Engine`, `${capitalized[0] || "Core"}Service`);
+      } else {
+        components.push("CoreEngine", "SystemAdapter");
+      }
+    } else {
+      components.push("CoreEngine", "SystemAdapter");
+    }
+  }
+
+  // Limit to reasonable number
+  components = Array.from(new Set(components)).slice(0, 8);
 
   return {
     projectName,
@@ -550,19 +670,19 @@ export default function App() {
             } else {
               responseText = `### 🚀 Workflow Complete\n\n${rawSummary}`;
             }
-            buildSum = getBuildSummary(sanitizedQuery, rawSummary);
+            buildSum = getBuildSummary(sanitizedQuery, rawSummary, agentResponse);
           } else if (agentResponse.response) {
             responseText = agentResponse.response;
-            buildSum = getBuildSummary(sanitizedQuery, responseText);
+            buildSum = getBuildSummary(sanitizedQuery, responseText, agentResponse);
           } else if (agentResponse.output) {
             responseText = agentResponse.output;
-            buildSum = getBuildSummary(sanitizedQuery, responseText);
+            buildSum = getBuildSummary(sanitizedQuery, responseText, agentResponse);
           } else if (agentResponse.message) {
             responseText = agentResponse.message;
-            buildSum = getBuildSummary(sanitizedQuery, responseText);
+            buildSum = getBuildSummary(sanitizedQuery, responseText, agentResponse);
           } else {
             responseText = JSON.stringify(agentResponse, null, 2);
-            buildSum = getBuildSummary(sanitizedQuery, responseText);
+            buildSum = getBuildSummary(sanitizedQuery, responseText, agentResponse);
           }
 
           addLog("success", "Central Agent (Webhook A) responded successfully.", agentResponse);
