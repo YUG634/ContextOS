@@ -1,0 +1,200 @@
+{
+  "name": "Project Timeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/project/timeline",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -112
+      ],
+      "id": "76ed8785-f3c4-4531-8f93-61551fac275f",
+      "name": "Webhook",
+      "webhookId": "7b4445df-1e31-4e6b-b3ee-f824abf0ce4a"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "project_memories",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -16
+      ],
+      "id": "74ab1b02-f056-4073-8419-dda9402d4a92",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "GykSQNPF41IgK7Pm",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const memories = $input.all();\nlet chronologicalLog = \"\";\n\nif (memories.length === 0 || !memories[0].json) {\n  chronologicalLog = \"No historical logs available for this project.\";\n} else {\n  memories.forEach((item, index) => {\n    const data = item.json;\n    chronologicalLog += `\\n[${data.created_at}] [Category: ${data.category}] ${data.content}\\n---`;\n  });\n}\n\nreturn [{ json: { chronologicalLog: chronologicalLog } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "d386efae-d40b-41da-af7f-2f129fee950b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert technical project manager. Analyze the chronological log of project memories below and synthesize them into a clean, professional project timeline milestone summary for onboarding new developers.\n\n=== START CHRONOLOGICAL LOG ===\n{{ $json.chronologicalLog }}\n=== END CHRONOLOGICAL LOG ===\n\nFormat the output as a clean markdown timeline tracking the evolution, decisions, and progress of the project.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        176,
+        -16
+      ],
+      "id": "068aa058-c529-4ce7-af35-7521070cb3f5",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: \"success\", timeline: $json.text } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "9ac7ed87-7eed-4f58-a8b3-bd1322009756",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        80
+      ],
+      "id": "3ddb6eed-bba6-4ab2-b57a-aa3201a95198",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        144,
+        160
+      ],
+      "id": "206ed8ab-7d2f-41f6-be56-c1dc07dc7b9a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i4UFc34wvsNOSAZJ",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d732638e-2124-4110-812d-6f152a7f353f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "OB1RV6FCmxVquobW",
+  "tags": []
+}

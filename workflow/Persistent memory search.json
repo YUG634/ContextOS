@@ -1,0 +1,100 @@
+{
+  "name": "Persistent memory search",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tenant-55cea8ef-6438-4c08-8e78-f2b6645c9696.aws.cognee.ai/api/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"search_type\": \"RAG_COMPLETION\",\n  \"datasets\": [\n    \"contextos_memories_v1\"\n  ],\n  \"query\": \"distributed-payment-settlement-engine\",\n  \"top_k\": 10\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -112,
+        -16
+      ],
+      "id": "e263d6a2-f9a2-46cf-9a4d-dabab5939891",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nNYd5qN0x2acm8vU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "565eb301-aadc-450e-97af-edbe9dca307b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "78525400-6d8e-416b-97a6-c5549afb545a",
+      "name": "Webhook",
+      "webhookId": "565eb301-aadc-450e-97af-edbe9dca307b"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.search_result[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        96,
+        -16
+      ],
+      "id": "69105b52-39be-4518-aafe-53abd721b86c",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7755c78f-7eb7-492c-adfb-2fb8194e279c",
+  "meta": {
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "fqG9x6vNvuWJ0vAz",
+  "tags": []
+}

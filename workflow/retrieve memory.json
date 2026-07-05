@@ -1,0 +1,171 @@
+{
+  "name": "retrieve memory",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/memory/retrieve",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -176
+      ],
+      "id": "3bd28112-a7e1-4692-aca1-6ad811a4fa16",
+      "name": "Webhook",
+      "webhookId": "fdbe77e1-008c-494b-b0e1-cfff25ed5618"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -576,
+        48
+      ],
+      "id": "ed538f1a-2c8e-4ac4-af2c-f31abfaa95ec",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tenant-55cea8ef-6438-4c08-8e78-f2b6645c9696.aws.cognee.ai/api/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"search_type\": \"GRAPH_COMPLETION\",\n  \"datasets\": [\n    \"contextos_memories_v1\"\n  ],\n  \"query\": \"What architectural decisions were made for this project?\",\n  \"top_k\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -48
+      ],
+      "id": "c22a22b6-bcf2-4c49-83b8-2340a1feb03b",
+      "name": "cognee - graph search",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nNYd5qN0x2acm8vU",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🚀 DYNAMIC PROJECT KEY EXTRACTOR\nconst rawText = $json.text || $json.AgentResponse || \"\";\n\n// Dynamically extract the project name value from the package.json string structure\nconst nameMatch = rawText.match(/\"name\"\\s*:\\s*\"([^\"]+)\"/) || rawText.match(/\"name\"\\\\*:\\s*\\\\*\"([^\"]+)\\\\*\"/);\nconst extractedProject = nameMatch ? nameMatch[1] : null;\n\nreturn {\n  json: {\n    incomingText: rawText,\n    targetProjectName: extractedProject\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -48
+      ],
+      "id": "cfa552af-a1cd-4d02-8125-5a110d79e39b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "tableId": "project_memories",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $json.incomingText }}"
+            },
+            {
+              "fieldId": "category",
+              "fieldValue": "generated project"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -48
+      ],
+      "id": "ee0c05e6-e899-4544-b6fa-9e1edec62494",
+      "name": "Create a row",
+      "alwaysOutputData": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "GykSQNPF41IgK7Pm",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cognee - graph search": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "cognee - graph search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6aada3ae-79d7-4034-9adc-c66e05dfbe26",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "X3Ziig6GqBpOaqL4",
+  "tags": []
+}

@@ -1,0 +1,251 @@
+{
+  "name": "pm agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -688,
+        -64
+      ],
+      "id": "5553ba73-2ca4-422c-8b98-cbe7acec5c7c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OB1RV6FCmxVquobW",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/OB1RV6FCmxVquobW"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        -64
+      ],
+      "id": "c88b437a-9703-4d48-8880-48de34c59064",
+      "name": "Call 'Project Timeline'"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Project Manager Agent for ContextOS. Your job is to deliver a concise, high-impact project status update for the development team based on the recent project history and timeline events provided below.\n\nIncoming Project History:\n{{ $json.output || $json.timeline || \"No recent milestones recorded yet.\" }}\n\nFormat your response in clean, human-readable Markdown using these exact headers:\n\n### 📊 Project Status Report\n*Overall Health:* [Active / On Track / Blocked]\n\n### 🎯 Completed Milestones\n- [Extract 1-2 major technical milestones or file creations completed from the data]\n\n### 🚧 Active Sprint & Focus\n- [Identify what the developer/architect agents are currently working on based on the records]\n\n### 📋 Recommended Next Actions\n1. [Suggest a logical next step for the Developer Agent]\n2. [Suggest a logical next step for the Architect Agent]\n\nRespond with ONLY the markdown text. Do not include raw JSON brackets or backticks.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the ContextOS PM Agent. You will be provided with a raw Graph Retrieval block containing project metadata (status, completion percentage, task logs). Analyze this graph context and clearly answer the user's question regarding: 1. What has been completed, 2. What is pending, and 3. The overall project percentage. Keep your response crisp, direct, and factual based ONLY on the retrieved graph context."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -288,
+        -64
+      ],
+      "id": "5da75eb1-97e5-46b5-a8a3-4255cbb0d4ff",
+      "name": "Gemini PM Brain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "53770015-3fda-42d9-8a47-fb87f97585e1",
+              "name": "projectId",
+              "value": "={{ json.projectId }}",
+              "type": "string"
+            },
+            {
+              "id": "e36e5761-f526-4e69-8253-bdf086e14293",
+              "name": "category",
+              "value": "Project Status",
+              "type": "string"
+            },
+            {
+              "id": "91425bb9-195b-4d17-a789-1a66c25d3c0b",
+              "name": "text",
+              "value": "={{ $json.text || $json.output || $json.response }}",
+              "type": "string"
+            },
+            {
+              "id": "f11ce58e-5bdc-46de-809e-bfd79a7bf7f4",
+              "name": "source",
+              "value": "pm_agent ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "223bd135-7fbb-4888-bdc1-fc669c6b533d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "2JIaldKrMuRGQLfr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/2JIaldKrMuRGQLfr",
+          "cachedResultName": "Store Memory"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "88df7730-a92f-4824-8d72-e64ed67aedbe",
+      "name": "Call 'Store Memory'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Grab the formatted data coming out of Step 4/5\nconst inputData = $input.item.json;\n\n// Return a perfectly structured JavaScript array containing your clean JSON block\nreturn [{\n  json: {\n    projectId: inputData.projectId || \"34d5571b-3d69-4cfa-99a9-60ca5d4b7b6a\",\n    agentResponse: inputData.text || \"Status report compiled successfully.\",\n    source: \"pm_agent\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -64
+      ],
+      "id": "0749c8a5-776b-43e8-869f-a46024574fcc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        144
+      ],
+      "id": "959ee711-2238-49d4-a7fb-a71a03362145",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "PB0UtPmHlf1Bpff2",
+          "name": "Groq account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Call 'Project Timeline'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Project Timeline'": {
+      "main": [
+        [
+          {
+            "node": "Gemini PM Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini PM Brain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'Store Memory'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Store Memory'": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gemini PM Brain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8c2cdda6-4f01-42eb-b193-74b673bda6fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "tUP45Veoovcfj0YG",
+  "tags": []
+}

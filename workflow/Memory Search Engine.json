@@ -1,0 +1,171 @@
+{
+  "name": "Memory Search Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/memories/search",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        -32
+      ],
+      "id": "c74a746d-b0b8-4473-b391-26a4ad5a6a34",
+      "name": "Webhook",
+      "webhookId": "a2f9b91d-2bae-45f5-8cf2-d1ed336739d6"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        176
+      ],
+      "id": "f14ad95d-7bf0-4aed-9822-bcacec7971b9",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Map the raw rows into a clean, standardized UI layout\nconst standardizedResults = items.map((item) => {\n  const data = item.json;\n  return {\n    memoryId: data.id,\n    category: data.category || \"Unclassified\",\n    insight: data.content,\n    capturedFrom: data.source || \"Unknown Session\",\n    timestamp: data.created_at\n  };\n});\n\nreturn [{ json: { results: standardizedResults } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        64
+      ],
+      "id": "441067dc-1ee7-49d2-94a9-35fd89c7b976",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: \"success\", count: $json.results.length, data: $json.results } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        320,
+        64
+      ],
+      "id": "c7bb6134-3bfc-4dae-ad84-3000fc5722fc",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "project_memories",
+        "returnAll": true,
+        "matchType": "allFilters"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        48
+      ],
+      "id": "aa7b4426-1868-481f-87cc-b9b4ebaa2058",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "GykSQNPF41IgK7Pm",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🚀 ACCURATE PROJECT NAME EXTRACTOR FROM PROMPT\n// 1. Pull the raw prompt string coming directly from your trigger node\nconst rawPrompt = $input.first().json.prompt || \"\";\n\n// 2. Use a regex to extract the text string between \"Build project application \" and the colon \":\"\nconst projectMatch = rawPrompt.match(/Build project application\\s+([^:]+)/);\n\n// 3. Isolate the target name if found, otherwise fallback cleanly\nconst extractedProject = projectMatch ? projectMatch[1].trim() : \"distributed-payment-settlement-engine\";\n\nreturn {\n  json: {\n    incomingPrompt: rawPrompt,\n    targetProjectName: extractedProject\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        48
+      ],
+      "id": "f0e70ab1-b622-4436-9cba-df157dc37cf8",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e8cc198f-1528-419c-8997-6db293f804ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "xzOTyAGEzm62u6Fc",
+  "tags": []
+}

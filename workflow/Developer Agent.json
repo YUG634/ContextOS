@@ -1,0 +1,402 @@
+{
+  "name": "Developer Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -864,
+        16
+      ],
+      "id": "bd41c827-3499-49ee-9db5-880d46512d9a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8f3b6d46-816c-4d14-acfb-6bf46f59ee3f",
+              "name": "projectId",
+              "value": "={{ $json.projectId }}",
+              "type": "string"
+            },
+            {
+              "id": "dd8a87af-ccac-4dfb-bb46-5dcdc67ee8cc",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        16
+      ],
+      "id": "7c5f5724-d372-4543-9e93-794ce9651009",
+      "name": "prepare tool data"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xzOTyAGEzm62u6Fc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xzOTyAGEzm62u6Fc",
+          "cachedResultName": "Memory Search Engine"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        16
+      ],
+      "id": "a4523fd1-022f-40a4-879d-554bf2a54281",
+      "name": "semantic search Engine"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Lead Senior Staff Engineer for ContextOS. Generate the required backend code files based on the user request.\n\nUSER PROMPT:\n{{ $('prepare tool data').item.json.prompt }}\n\nPROJECT HISTORICAL CONTEXT:\n{{ $json }}\n\nINSTRUCTIONS:\nYou must separate each file using the exact line text `===FILE: path/filename.js===`. Write the full code content right below that line. Do not use any markdown formatting or ticks (```) around the code.\n\nExample format:\n===FILE: package.json===\n{\n  \"name\": \"server\"\n}\n===FILE: server.js===\nconst express = require('express');\n\nGenerate only the necessary core backend files.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -336,
+        16
+      ],
+      "id": "e9da588a-906f-4d13-a613-e97239411081",
+      "name": "Developer LLM Engine"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72155865-b6af-47a6-a313-a3b07bb97ced",
+              "name": "projectId",
+              "value": "={{ $('Code in JavaScript').item.json.projectId }}",
+              "type": "string"
+            },
+            {
+              "id": "10199e87-8805-46bc-acd4-515a807c98ac",
+              "name": "category",
+              "value": "={{ $('Code in JavaScript').item.json.category }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        16
+      ],
+      "id": "c0497369-fc59-4758-95c9-74f967f3b72f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e6b916bd-f495-42e5-aabe-157ed1bc37eb",
+              "name": "projectId",
+              "value": "={{ $json.projectId }}",
+              "type": "string"
+            },
+            {
+              "id": "fb88a616-666f-4175-875b-26db988d2f13",
+              "name": "agentResponse",
+              "value": "={{ $('Code in JavaScript').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "c4aec407-7f0c-4915-a7a2-30a914ba49f0",
+              "name": "source",
+              "value": "developer",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        16
+      ],
+      "id": "684b9045-9b08-4e89-9679-94fe848e3ea6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "content",
+        "options": {
+          "fileName": "={{ $json.path }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        -192
+      ],
+      "id": "b32c30bd-e073-4100-80e6-a02e11184f7b",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $input.item.json.text || $input.item.json.response || $input.item.json.output || $input.item.json.content || \"\";\n\nconst files = [];\nconst parts = rawText.split(/===FILE:\\s*([^\\s]+)===\\s*/g);\n\nfor (let i = 1; i < parts.length; i += 2) {\n  const path = parts[i].trim();\n  const content = parts[i + 1] ? parts[i + 1].trim() : \"\";\n  \n  if (path && content) {\n    files.push({\n      path: path,\n      content: content\n    });\n  }\n}\n\nif (files.length === 0) {\n  throw new Error(\"No files could be parsed. Check the LLM output format.\");\n}\n\n// FORCE N8N TO LOOK BACK AT THE WORKFLOW ENTRY DOOR FOR METADATA\nlet projectId = \"\";\nlet category = \"code snippets\";\n\ntry {\n  // Directly targeting the execution root block of Workflow 10\n  const rootTrigger = $('When Executed by Another Workflow').first().json;\n  projectId = rootTrigger.projectId || \"\";\n  category = rootTrigger.category || \"code snippets\";\n} catch (e) {\n  // Fallback if the node name is slightly different\n  projectId = $json.projectId || \"\";\n}\n\n// Return the files properly formatted with data inside the json object\nreturn files.map(file => {\n  return {\n    json: {\n      path: file.path,\n      content: file.content,\n      projectId: projectId,\n      category: category,\n      text: rawText\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        16
+      ],
+      "id": "e96a5b37-c1fb-44a9-a3f1-630b59c8e8da",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        256
+      ],
+      "id": "1ddc906b-8ebd-4848-96d7-a358578df4c4",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "PB0UtPmHlf1Bpff2",
+          "name": "Groq account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Import the native Node.js File System module built right into your server\nconst fs = require('fs');\nconst path = require('path');\n\n// 1. Fetch ALL 7 file items coming into this node from the Merge node\nconst items = $input.all();\n\n// 2. Reach directly back to your original \"Code\" node to grab your parent metadata\nconst originalJson = $node[\"Code\"].json;\n\n// Target workspace directory\nconst baseDir = 'E:/jwt-auth-server';\n\n// 3. Loop through every single file item in the array to write them all\nfor (const item of items) {\n  const fileRelativePath = item.json.path;\n  const fileContent = item.json.content;\n  \n  if (!fileRelativePath || !fileContent) continue;\n\n  const fullPath = path.join(baseDir, fileRelativePath);\n\n  try {\n    const dirName = path.dirname(fullPath);\n    if (!fs.existsSync(dirName)) {\n      fs.mkdirSync(dirName, { recursive: true });\n    }\n    fs.writeFileSync(fullPath, fileContent, 'utf8');\n  } catch (error) {\n    throw new Error(`Failed to write file to disk via Node.js: ${error.message}`);\n  }\n}\n\n// 4. FORCE the node to return your clean text fields back to the main workflow loop\nreturn [{\n  json: {\n    projectId: originalJson.projectId || \"34d5571b-3d69-4cfa-99a9-60ca5d4b7b6a\",\n    category: originalJson.category || \"code snippets\",\n    text: originalJson.text || \"Code generated successfully.\",\n    source: \"developer\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        16
+      ],
+      "id": "e37da193-579c-4b38-8e98-e7d5f730a3ea",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "2JIaldKrMuRGQLfr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/2JIaldKrMuRGQLfr",
+          "cachedResultName": "Store Memory"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        16
+      ],
+      "id": "93ac346f-612b-4a13-a80d-26c9279738c1",
+      "name": "Async log code memory"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        368,
+        -192
+      ],
+      "id": "4b8af62c-e0a1-4c05-b4f7-3ea0832b19e6",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "prepare tool data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prepare tool data": {
+      "main": [
+        [
+          {
+            "node": "semantic search Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "semantic search Engine": {
+      "main": [
+        [
+          {
+            "node": "Developer LLM Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Developer LLM Engine": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Developer LLM Engine",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Async log code memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Async log code memory": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e90e63d4-ca08-4b16-b49d-9a1304cbf0be",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "wTWhBGfwfB2PdcoN",
+  "tags": []
+}

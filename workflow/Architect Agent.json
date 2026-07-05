@@ -1,0 +1,246 @@
+{
+  "name": "Architect Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        -64
+      ],
+      "id": "fe41a1dd-8a7f-4983-9876-b3333e164bfd",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xzOTyAGEzm62u6Fc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xzOTyAGEzm62u6Fc",
+          "cachedResultName": "Memory Search Engine"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        -64
+      ],
+      "id": "882e3286-28bb-4610-8afc-f8963cf7931f",
+      "name": "Semantic Search Engine"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Lead Senior Staff Engineer for ContextOS. Your job is to generate production-ready backend code blocks organized strictly into a JSON structure.\n\nUSER PROMPT:\n\"{{ $node[\"When Executed by Another Workflow\"].json.prompt || $json.prompt }}\"\n\nPROJECT HISTORICAL CONTEXT:\n{{ $json }}\n\nINSTRUCTIONS:\nYou must respond with a single, valid JSON object containing an array of files. Do not write any markdown explanations, do not write prose, and do not wrap your response in markdown code blocks. Respond ONLY with raw, parsable JSON matching this schema:\n\n{\n  \"files\": [\n    {\n      \"path\": \"package.json\",\n      \"content\": \"{ \\\"name\\\": \\\"jwt-auth-server\\\", \\\"dependencies\\\": { \\\"express\\\": \\\"^4.19.2\\\", \\\"jsonwebtoken\\\": \\\"^9.0.2\\\", \\\"bcryptjs\\\": \\\"^2.4.3\\\", \\\"mongoose\\\": \\\"^8.4.3\\\" } }\"\n    },\n    {\n      \"path\": \"server.js\",\n      \"content\": \"const express = require('express'); const app = express(); app.use(express.json()); app.get('/', (req, res) => res.json({ status: 'success' })); app.listen(3000, () => console.log('Server running on port 3000'));\"\n    }\n  ]\n}\n\nEnsure all quotation marks inside the content fields are properly escaped so the JSON does not break. Generate only these core entry files to initialize the workspace structure.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the ContextOS Architect Agent. You will receive historical graph data from past design sessions. When answering queries about previous choices (e.g., why a technology was selected), look for the 'decision' and 'reasoning' keys inside the retrieved context and explain the technical rationale to the user. Do not invent new architecture; explain what was already committed to the graph."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -96,
+        -64
+      ],
+      "id": "379e8fac-1bde-483c-abb5-1aa55ae815d2",
+      "name": "Architect LLM CHAIN"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "X3Ziig6GqBpOaqL4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/X3Ziig6GqBpOaqL4",
+          "cachedResultName": "retrieve memory"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        -64
+      ],
+      "id": "0792ebae-99cc-465a-9e1a-f9becee816ec",
+      "name": "Async Log Architecture "
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f436a1e3-57d6-4743-96e7-55caf9bde11d",
+              "name": "agentResponse",
+              "value": "={{ $json.text || $json.response || $json.output || $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -64
+      ],
+      "id": "e258e798-b1b7-4fa0-b3e6-785414fa44f4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "226085df-270b-4f1f-88b3-01b8eacd3223",
+              "name": "prompt",
+              "value": "={{ $json.prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -528,
+        -64
+      ],
+      "id": "cbd029ad-1701-45f7-8354-22c6fa503ffe",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "0782eeeb-b936-4bdc-811a-68f8ccf6adf7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "PB0UtPmHlf1Bpff2",
+          "name": "Groq account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Semantic Search Engine": {
+      "main": [
+        [
+          {
+            "node": "Architect LLM CHAIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Architect LLM CHAIN": {
+      "main": [
+        [
+          {
+            "node": "Async Log Architecture ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Async Log Architecture ": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Semantic Search Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Architect LLM CHAIN",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d4dfb8b5-54ba-483b-80b5-5c0b75a61cda",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "gR0BXsiXeyGMotku",
+  "tags": []
+}

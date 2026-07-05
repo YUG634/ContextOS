@@ -1,0 +1,158 @@
+{
+  "name": "Project Creation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v1/projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "31e2763f-b59d-4ea4-9d71-dd01f1e5741f",
+      "name": "Webhook",
+      "webhookId": "38be7d83-2892-47bb-9c08-e31c9326a156"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst body = $input.item.json.body;\n\nif (!body.userId || !body.projectName) {\n  throw new Error(\"Missing required fields: userId and projectName are mandatory.\");\n}\n\nreturn [{\n  json: {\n    userId: body.userId,\n    projectName: body.projectName,\n    description: body.description || \"\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -32
+      ],
+      "id": "7e535453-2154-44c0-b9b1-9a541686f3eb",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "tableId": "projects",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.userId }}"
+            },
+            {
+              "fieldId": "project_name",
+              "fieldValue": "={{ $json.projectName }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.description }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -32
+      ],
+      "id": "b263fef6-c816-4506-9c4d-35e31173650b",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "GykSQNPF41IgK7Pm",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This simulates a successful 201 Created dataset registration from Cognee Cloud\nconst supabaseData = $input.item.json;\n\nreturn [{\n  json: {\n    id: supabaseData.id,\n    project_name: supabaseData.project_name,\n    created_at: supabaseData.created_at,\n    cognee_mocked: true,\n    cognee_status: \"dataset_allocated\",\n    datasetName: `project_${supabaseData.id}`\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -32
+      ],
+      "id": "298c4ed3-a461-463d-8686-7acf85c84102",
+      "name": "mock cognee cloud"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"projectId\": \"{{ $json.id }}\",\n  \"projectName\": \"{{ $json.project_name }}\",\n  \"memoryLayer\": \"initialized_mocked\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "8402ecb7-332e-4095-8e18-b1adf02e7263",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "mock cognee cloud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mock cognee cloud": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7b49261c-25ab-42c2-aca9-b93dadfbe021",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d332cb98df84239f11f0ad2f0fbb11a02f4e38bed83db4e465fb4a60d2bd19ed"
+  },
+  "id": "uLs0Ms1ffeT2391G",
+  "tags": []
+}
