@@ -433,16 +433,22 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ---
 
-## 📬 Contact
+## 📬 Get in Touch
 
-- **Project Lead**: Yug Agrawal
-- **Email**: yugagrawalmng@gmail.com
-- **GitHub**: YUG634
-- **Linkedin**: www.linkedin.com/in/yug-agrawal-101bb11a0
+**Have questions, ideas, or want to collaborate?**
 
+| Channel | Link |
+|---------|------|
+| 💼 **LinkedIn** | [yug-agrawal](https://www.linkedin.com/in/yug-agrawal-101bb11a0) |
+| 🐙 **GitHub** | [@YUG634](https://github.com/YUG634) |
+| ✉️ **Email** | [yugagrawalmng@gmail.com](mailto:yugagrawalmng@gmail.com) |
+
+**Creator:** Yug Agrawal — Building AI-powered development tools
 
 ---
 
 <div align="center">
-  <b>Built for the Hangover hackathon with ❤️ by Yug Agrawal </b>
+  <b>Built with ❤️ for the Hangover hackathon</b>
+  <br/>
+  <i>Transforming ephemeral AI knowledge into persistent architectural memory</i>
 </div>
