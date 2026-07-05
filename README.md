@@ -433,22 +433,32 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ---
 
-## 📬 Get in Touch
-
-**Have questions, ideas, or want to collaborate?**
-
-| Channel | Link |
-|---------|------|
-| 💼 **LinkedIn** | [yug-agrawal](https://www.linkedin.com/in/yug-agrawal-101bb11a0) |
-| 🐙 **GitHub** | [@YUG634](https://github.com/YUG634) |
-| ✉️ **Email** | [yugagrawalmng@gmail.com](mailto:yugagrawalmng@gmail.com) |
-
-**Creator:** Yug Agrawal — Building AI-powered development tools
-
----
+## 👨‍💻 Made By
 
 <div align="center">
-  <b>Built with ❤️ for the Hangover hackathon</b>
-  <br/>
-  <i>Transforming ephemeral AI knowledge into persistent architectural memory</i>
+  <h3>
+    <a href="https://github.com/YUG634">
+      <img src="https://img.shields.io/badge/GitHub-YUG634-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
+    </a>
+    <a href="https://linkedin.com/in/yug-agrawal-101bb11a0">
+      <img src="https://img.shields.io/badge/LinkedIn-Yug%20Agrawal-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"/>
+    </a>
+    <a href="mailto:yugagrawalmng@gmail.com">
+      <img src="https://img.shields.io/badge/Email-yugagrawalmng%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"/>
+    </a>
+  </h3>
+
+  **Yug Agrawal**
+
+  🚀 Building AI-powered solutions for intelligent project workspaces
+
+  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+  ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
+  ![n8n](https://img.shields.io/badge/n8n-EA4B6A?style=flat-square&logo=n8n&logoColor=white)
+  ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white)
+</div>
+
+<div align="center">
+  <p>Built with ❤️ for the Hangover hackathon</p>
+  <p><i>Transforming ephemeral AI knowledge into persistent architectural memory</i></p>
 </div>
