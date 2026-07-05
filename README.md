@@ -1,564 +1,448 @@
 # ContextOS
 
-> **Production-grade multi-agent AI workspace featuring real-time project generation, semantic memory persistence, and intelligent context retrieval.**
-
-<div align="center">
+> **Intelligent Project Workspace with Persistent Semantic Memory**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![React 19](https://img.shields.io/badge/React-19.x-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-[![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![n8n](https://img.shields.io/badge/n8n-Workflow_Automation-EA4B6A?logo=n8n&logoColor=white)](https://n8n.io/)
-[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-
-[Live Demo](https://context-os-gules.vercel.app) • [Documentation](#-documentation) • [Getting Started](#-quick-start) • [Architecture](#-system-architecture)
-
-</div>
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com/)
+[![n8n](https://img.shields.io/badge/n8n-Workflow_Automation-EA4B6A?logo=n8n)](https://n8n.io/)
+[![Cognee](https://img.shields.io/badge/Cognee-Semantic_Graph-6C5CE7)](https://cognee.ai/)
 
 ---
 
-## 🎯 The Problem
+## 📋 Problem Statement
 
-AI-generated project knowledge is **ephemeral and trapped**. When multi-agent systems create software architectures, the critical context—design decisions, dependency relationships, component interactions—vanishes after generation.
+**Generated project knowledge is ephemeral.** When AI agents generate software projects, the architectural decisions, dependency relationships, and implementation context are typically lost after [...]
 
-**Result?** 
-- ❌ Lost architectural decisions
-- ❌ No semantic understanding of components
-- ❌ Impossible to query project context later
-- ❌ Manual documentation that rots immediately
-- ❌ Zero reusability across projects
+This creates a significant knowledge gap:
+- ❌ No traceability of design decisions
+- ❌ Lost context for future modifications
+- ❌ Inability to query project architecture
+- ❌ No semantic understanding of component relationships
+- ❌ Manual documentation that quickly becomes outdated
 
 ---
 
-## 💡 The Solution
+## 💡 Solution
 
-**ContextOS** is a persistent semantic workspace that captures, indexes, and retrieves project context as it's being generated.
-
-Instead of ephemeral AI workflows, ContextOS creates a **living knowledge graph** of your entire codebase—queryable, explorable, and always in sync.
+**ContextOS** bridges the gap between AI-powered project generation and persistent architectural memory. Our platform orchestrates a multi-agent workflow that not only generates software projects [...]
 
 ### How It Works
 
-```
-User Request
-    ↓
-[Central Agent] → Generate full project
-    ↓
-[Architecture Extractor] → Parse components & dependencies
-    ↓
-[Memory Indexer] → Embed into semantic graph (Cognee)
-    ↓
-[Persistent Storage] → Query anytime via natural language
-    ↓
-React Dashboard → Visualize & explore relationships
-```
+1. **Generate** - Multi-agent system builds complete software projects
+2. **Extract** - Architecture, dependencies, and relationships are captured
+3. **Index** - Knowledge is embedded into a semantic graph using Cognee
+4. **Retrieve** - Query project context through natural language or structured queries
+5. **Visualize** - Explore relationships through interactive knowledge graphs
 
 ---
 
 ## 🏗️ System Architecture
 
 ```mermaid
-graph TB
-    subgraph Frontend["🎨 Frontend Layer"]
-        UI["React 19 Dashboard<br/>Real-time telemetry"]
-        UI -->|Webhook Trigger| WH1["Webhook Client A"]
+flowchart TB
+    subgraph Frontend["Frontend Layer"]
+        UI[React Dashboard]
+        UI --> |User Request| API[Webhook Client]
     end
 
-    subgraph Orchestration["⚙️ Orchestration Layer"]
-        WH1 -->|HTTP| n8n["n8n Workflow Engine<br/>Multi-agent coordinator"]
-        n8n -->|Orchestrate| Agent1["🤖 Project Generator"]
-        n8n -->|Orchestrate| Agent2["🔍 Architecture Extractor"]
-        n8n -->|Orchestrate| Agent3["🧠 Memory Indexer"]
+    subgraph Orchestration["Orchestration Layer"]
+        API --> |Trigger| n8n[n8n Workflow Engine]
+        n8n --> Agent1[Project Generator Agent]
+        n8n --> Agent2[Architecture Extractor Agent]
+        n8n --> Agent3[Memory Indexer Agent]
+        Agent1 & Agent2 & Agent3 --> |Coordinate| n8n
     end
 
-    subgraph Storage["💾 Storage Layer"]
-        Agent1 & Agent2 & Agent3 -->|Persist| DB["PostgreSQL<br/>Supabase"]
-        Agent3 -->|Embed| Cognee["Cognee<br/>Semantic Graph DB"]
+    subgraph Storage["Storage Layer"]
+        n8n --> |Store Metadata| Supabase[(Supabase<br/>PostgreSQL)]
+        n8n --> |Index Knowledge| Cognee[Cognee<br/>Semantic Graph]
     end
 
-    subgraph Retrieval["🔎 Retrieval Layer"]
-        WH2["Webhook Client B<br/>Memory Query"]
-        DB -->|Query| WH2
-        Cognee -->|Vector Search| WH2
-        WH2 -->|Results| UI
+    subgraph Retrieval["Retrieval Layer"]
+        Supabase --> |Query| API_Retrieval[REST API]
+        Cognee --> |Graph Query| API_Retrieval
+        API_Retrieval --> |Return Context| UI
     end
 
-    subgraph Sync["🔄 Synchronization"]
-        DB ←→|Bidirectional Sync| Cognee
+    subgraph Memory["Memory Pipeline"]
+        Supabase --> |Sync| Cognee
+        Cognee --> |Enrich| Supabase
     end
 
-    style Frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    style Orchestration fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    style Storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    style Retrieval fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Sync fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style Frontend fill:#e1f5fe
+    style Orchestration fill:#f3e5f5
+    style Storage fill:#e8f5e9
+    style Retrieval fill:#fff3e0
+    style Memory fill:#fce4ec
 ```
 
 ---
 
-## ✨ Core Features
+## ✨ Key Features
 
 | Feature | Description |
 |---------|-------------|
-| 🤖 **Multi-Agent Orchestration** | Coordinated workflow across specialized agents for generation, extraction, and indexing |
-| 🧠 **Semantic Knowledge Graph** | Persistent memory indexed via Cognee for intelligent context retrieval |
-| ⚡ **Dual-Webhook Architecture** | Asynchronous request routing for generation and memory queries |
-| 💾 **Persistent Context** | All metadata, architecture, and relationships stored in PostgreSQL |
-| 🔍 **Natural Language Queries** | Ask questions about your codebase in plain English |
-| 📊 **Real-Time Visualization** | Interactive dashboards showing workflow execution and component relationships |
-| 🎯 **Telemetry Pipeline** | Live status updates from all agents (Architect, Developer, PM Coordinator, Memory Engine) |
-| 🔄 **Auto-Synchronization** | Continuous bidirectional sync between structured and semantic storage |
+| 🤖 **Multi-Agent Orchestration** | Coordinated workflow across specialized agents for project generation, extraction, and indexing |
+| 🧠 **Semantic Memory Graph** | Project knowledge stored as interconnected nodes in a semantic graph using Cognee |
+| 🔄 **Automated Workflow** | End-to-end automation from request submission to knowledge indexing |
+| 💾 **Persistent Storage** | All project metadata and architecture stored in Supabase PostgreSQL |
+| 🔍 **Context-Aware Retrieval** | Query project knowledge through natural language or structured queries |
+| 📊 **Relationship Visualization** | Interactive graph visualization of project dependencies and architecture |
+| 🎯 **Real-Time Monitoring** | Track workflow execution and agent activity in real-time |
+| 🔗 **Memory Synchronization** | Continuous sync between structured storage and semantic graph |
 
 ---
 
-## 🚀 Quick Start
+## 🔄 Workflow Overview
 
-### Prerequisites
-- **Node.js** 18+
-- **npm** or **yarn**
-- n8n instance (local or cloud)
-- Supabase project
-- Cognee API access
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as React Frontend
+    participant Webhook
+    participant n8n as n8n Workflow
+    participant Agents as Multi-Agent System
+    participant Supabase
+    participant Cognee
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/YUG634/ContextOS.git
-cd ContextOS
-
-# Install dependencies
-npm install
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your webhook URLs and API tokens
-```
-
-### Environment Variables
-
-```bash
-# Frontend Configuration
-VITE_APP_NAME=ContextOS
-
-# Webhook Routes (n8n instances)
-VITE_WEBHOOK_A_CENTRAL_AGENT=http://localhost:5678/webhook/project-generator
-VITE_WEBHOOK_B_MEMORY_RETRIEVAL=http://localhost:5678/webhook/memory-sync
-
-# Storage Backend
-VITE_SUPABASE_URL=https://xxx.supabase.co
-VITE_SUPABASE_KEY=eyJxxx...
-
-# Semantic Memory
-VITE_COGNEE_API_URL=http://localhost:8000
-VITE_COGNEE_API_KEY=your_api_key
-
-# Development
-VITE_SANDBOX_MODE=false
-VITE_DEBUG_MODE=false
-```
-
-### Run Locally
-
-```bash
-# Development server (HMR enabled)
-npm run dev
-
-# Access dashboard
-# Open http://localhost:3000
-```
-
-### Production Build
-
-```bash
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+    User->>UI: Submit project request
+    UI->>Webhook: Trigger workflow
+    Webhook->>n8n: Initiate build process
+    
+    n8n->>Agents: Execute project generation
+    Agents->>Agents: Build complete project
+    Agents->>n8n: Return project artifacts
+    
+    n8n->>Agents: Extract architecture knowledge
+    Agents->>Agents: Parse dependencies & structure
+    Agents->>n8n: Return normalized data
+    
+    n8n->>Supabase: Store project metadata
+    n8n->>Cognee: Index semantic knowledge
+    
+    Cognee->>Cognee: Create knowledge graph
+    Cognee->>Supabase: Sync enriched data
+    
+    User->>UI: Query project context
+    UI->>Supabase: Retrieve structured data
+    UI->>Cognee: Query semantic graph
+    
+    Supabase-->>UI: Return project data
+    Cognee-->>UI: Return relationships
+    UI-->>User: Display unified context
 ```
 
 ---
 
-## 📋 Usage Examples
+## 🧩 Technical Challenges Solved
 
-### Generate a Project
+### 🔀 Dynamic Payload Normalization
+- Implemented flexible data transformation pipelines
+- Handled heterogeneous agent outputs with unified schemas
+- Built robust validation and error handling for malformed data
 
+### 🔗 Webhook Orchestration
+- Designed resilient webhook architecture for agent communication
+- Implemented retry logic and failure handling
+- Created event-driven workflow triggering system
+
+### 🤖 Multi-Agent Workflow Coordination
+- Coordinated asynchronous agent operations
+- Managed state persistence across agent interactions
+- Implemented dependency resolution between agents
+
+### 💾 Memory Persistence
+- Designed schema for flexible project knowledge storage
+- Implemented versioning for architectural decisions
+- Created efficient query patterns for project metadata
+
+### 🔍 Semantic Retrieval
+- Integrated Cognee for vector embeddings and graph construction
+- Implemented hybrid search (semantic + structured)
+- Created ranking system for relevant context retrieval
+
+### 🔄 Data Synchronization
+- Built bidirectional sync between Supabase and Cognee
+- Implemented change detection and incremental updates
+- Ensured consistency across storage systems
+
+---
+
+## 📸 Project Screenshots
+
+### 🖥️ Frontend Dashboard
 ```
-📝 User Input:
-"Create a JWT authentication service with rate limiting and Redis caching"
-
-🤖 ContextOS Response:
-✅ Project Generator → Creates complete auth service
-✅ Architecture Extractor → Identifies 12 components, 31 dependencies
-✅ Memory Indexer → Embeds into Cognee (4.2s)
-
-📊 Result Card:
-├── Project: jwt-auth-service
-├── Components: [JWTValidator, RedisCache, RateLimiter, ...]
-├── Dependencies: [express, redis, jsonwebtoken, ...]
-└── Memory Status: "Fully Synchronized"
+┌─────────────────────────────────────────────────┐
+│  CONTEXTOS  ▼  Dashboard  Projects  Knowledge   │
+├─────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐              │
+│  │ Active       │  │ Projects    │              │
+│  │ Workflows    │  │ 12 Total    │              │
+│  │ 3 Running    │  │ 8 Completed │              │
+│  └─────────────┘  └─────────────┘              │
+│                                                  │
+│  Recent Projects:                                │
+│  ┌──────────────────────────────────────────┐   │
+│  │ 🚀 E-Commerce API    ⏱ 2 min ago       │   │
+│  │ 📊 Analytics Pipeline ⏱ 1 hour ago     │   │
+│  │ 🤖 ML Service         ⏱ 3 hours ago    │   │
+│  └──────────────────────────────────────────┘   │
+│                                                  │
+│  [New Project]  [View Knowledge Graph]          │
+└─────────────────────────────────────────────────┘
 ```
 
-### Query Project Context
-
+### ⚙️ Workflow Execution
 ```
-📝 User Query:
-"How does authentication work in this project?"
+┌─────────────────────────────────────────────────┐
+│  WORKFLOW: Project Generation #42               │
+├─────────────────────────────────────────────────┤
+│  ✅ Project Generator   │ 2.3s   │ Complete   │
+│  ✅ Architecture Extr.  │ 1.1s   │ Complete   │
+│  🔄 Memory Indexer      │ 67%    │ Running    │
+│  ⏳ Semantic Embedding   │ 0%     │ Queued    │
+│  ⏳ Graph Construction   │ 0%     │ Queued    │
+├─────────────────────────────────────────────────┤
+│  🔍 Extracted 142 components                   │
+│  📊 Found 387 dependencies                     │
+│  🧠 Indexing 54 nodes                         │
+└─────────────────────────────────────────────────┘
+```
 
-🔍 ContextOS Search:
-Querying semantic graph...
+### 🕸️ Cognee Knowledge Graph
+```
+        ┌──────────────────────────────┐
+        │    📦 Project: "ContextOS"   │
+        └──────────┬───────────────────┘
+                   │
+        ┌──────────▼──────────┐
+        │   📁 /src           │
+        └──────┬──────────────┘
+               │
+    ┌──────────┼──────────┐
+    │          │          │
+┌───▼───┐ ┌───▼───┐ ┌───▼────┐
+│📄 App │ │📁 api │ │📁 auth │
+└───┬───┘ └───┬───┘ └───┬────┘
+    │         │         │
+    └─────────┼─────────┘
+              │
+        ┌─────▼─────┐
+        │ 🔗 React  │
+        │ ⚛️ v18.2  │
+        └───────────┘
+```
 
-✅ Found 3 relevant contexts:
-
-1️⃣ JWT Authentication Flow
-   • JWTValidator validates incoming tokens
-   • Uses RedisCache for blacklist storage
-   • RateLimiter enforces max attempts
-   🔗 Related files: auth.service.ts, middleware.ts
-
-2️⃣ Session Persistence
-   • Sessions stored in PostgreSQL
-   • Refresh tokens rotated on each use
-   • Cognee indexed all auth boundaries
-
-3️⃣ Permission Middleware
-   • Role-based access control (RBAC)
-   • Protected routes via authentication decorator
-   • 4 permission levels enforced
+### 🔍 Memory Retrieval
+```
+┌─────────────────────────────────────────────────┐
+│  🔍 Query: "How does authentication work?"      │
+│  [Search]  [Semantic]  [Graph]                  │
+├─────────────────────────────────────────────────┤
+│  Results (3 found):                             │
+│                                                  │
+│  📌 JWT Authentication Flow                     │
+│     • AuthProvider wraps App component         │
+│     • useAuth hook provides session            │
+│     • Tokens stored in Supabase sessions       │
+│     🔗 Related: auth.service.ts                │
+│                                                  │
+│  📌 Session Management                          │
+│     • Managed via Supabase Auth                │
+│     • Persisted in PostgreSQL                  │
+│     • Refresh token rotation                   │
+│     🔗 Related: middleware.ts                  │
+│                                                  │
+│  📌 Permission Middleware                       │
+│     • Role-based access control                │
+│     • Route protection                         │
+│     • API guard implementation                 │
+│     🔗 Related: permissions.json               │
+└─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | React 19 + TypeScript 5.8 | Interactive dashboard & telemetry UI |
-| **Build Tool** | Vite 6.2 | Lightning-fast HMR & production builds |
-| **Styling** | Tailwind CSS 4.1 | Utility-first design system |
-| **Orchestration** | n8n | Multi-agent workflow coordination |
-| **Communication** | Webhooks (HTTP) | Asynchronous request routing |
-| **Database** | Supabase (PostgreSQL) | Structured metadata storage |
-| **Semantic Memory** | Cognee | Vector embeddings & knowledge graphs |
-| **UI Components** | Lucide React | Consistent iconography |
-| **Animation** | Motion 12 | Smooth transitions & effects |
-
----
-
-## 🏛️ Project Structure
-
-```
-ContextOS/
-├── src/
-│   ├── components/
-│   │   ├── LeftPanel.tsx          # Configuration & console logger
-│   │   ├── CenterPanel.tsx        # Chat interface & telemetry nodes
-│   │   ├── RightPanel.tsx         # Memory graph visualization
-│   │   ├── MarkdownRenderer.tsx   # Code block rendering
-│   │   ├── MockData.ts            # Sandbox mode responses
-│   │   └── ...
-│   ├── lib/
-│   │   └── api.ts                 # Webhook clients & API integration
-│   ├── App.tsx                    # Main orchestration logic
-│   ├── types.ts                   # TypeScript interfaces
-│   ├── main.tsx                   # React entry point
-│   └── index.css                  # Global styles
-├── index.html                     # HTML shell
-├── package.json                   # Dependencies & scripts
-├── tsconfig.json                  # TypeScript configuration
-├── vite.config.ts                 # Vite build configuration
-├── .env.example                   # Environment template
-└── README.md                       # This file
-```
+| Category | Technology | Purpose |
+|----------|-----------|---------|
+| **Frontend** | React 18 + TypeScript | UI dashboard and user interaction |
+| **Workflow Engine** | n8n | Workflow automation and agent orchestration |
+| **Agent Communication** | Webhooks | Asynchronous agent coordination |
+| **Primary Database** | Supabase (PostgreSQL) | Persistent project metadata and structured storage |
+| **Semantic Memory** | Cognee | Knowledge graph construction and semantic retrieval |
+| **APIs** | REST + WebSocket | Data access and real-time updates |
+| **Languages** | TypeScript, JavaScript | Type-safe application code |
+| **Graph Visualization** | Cytoscape.js / D3.js | Interactive knowledge graph rendering |
+| **State Management** | Zustand / React Query | Client-side state and caching |
+| **Authentication** | Supabase Auth | User management and access control |
 
 ---
 
-## 🔄 Workflow Pipeline
+## 🚀 Future Improvements
 
-### Generation Flow (Build Projects)
+### 🔮 Advanced Agent Collaboration
+- Implement agent-to-agent communication protocols
+- Add specialized agents for different project types (microservices, monoliths, serverless)
+- Enable parallel agent execution for faster workflows
 
-```
-1. User submits: "Create an e-commerce API"
-                  ↓
-2. Frontend triggers Webhook A (Central Agent)
-                  ↓
-3. n8n orchestrates multi-agent generation:
-   ├─ Project Generator → Creates boilerplate
-   ├─ Dependency Resolver → Installs packages
-   └─ Code Generator → Writes implementation
-                  ↓
-4. Response parsed & formatted
-                  ↓
-5. Auto-trigger Architecture Extraction:
-   ├─ Identify components (services, controllers, models)
-   ├─ Extract dependency graph
-   └─ Capture design patterns
-                  ↓
-6. Index into Cognee semantic graph
-                  ↓
-7. Telemetry updates: ✅ Complete
-```
+### 🎨 Enhanced Visualization
+- Render files and code previews directly in the UI
+- Interactive exploration of repository structure
+- Real-time collaborative graph exploration
 
-### Retrieval Flow (Query Memory)
+### 📊 Graph Intelligence
+- Advanced graph algorithms for pattern detection
+- Predictive architecture suggestions
+- Anomaly detection in project structures
 
-```
-1. User queries: "Show me all database operations"
-                  ↓
-2. Detect retrieval intent
-                  ↓
-3. Trigger Webhook B (Memory Retrieval)
-                  ↓
-4. Execute dual search:
-   ├─ Semantic Search: Vector similarity in Cognee
-   └─ Structured Query: SQL on PostgreSQL
-                  ↓
-5. Merge & rank results by relevance
-                  ↓
-6. Format response with related components
-                  ↓
-7. Visualize relationships in D3.js graph
-```
+### 🔒 Multi-Tenancy
+- Isolated memory for different projects
+- Fine-grained access controls
+- Project-level permission management
+
+### 🎯 Retrieval Optimization
+- Fine-tuned ranking algorithms
+- Hybrid retrieval strategies (BM25 + vector + graph)
+- Caching layer for frequent queries
+
+### 🔄 Integration Ecosystem
+- GitHub/GitLab integration for repository sync
+- CI/CD pipeline integration
+- IDE plugins for real-time context retrieval
 
 ---
 
-## 🎯 Real-Time Telemetry
+## 📚 What I Learned
 
-The dashboard includes **4 autonomous agents** that report live status:
+### 🔄 Workflow Automation
+- Designing resilient, fault-tolerant workflows
+- Managing state across distributed services
+- Implementing idempotent operations
 
-| Agent | Role | Lifecycle |
-|-------|------|-----------|
-| 🏗️ **Architect** | Analyzes requirements & validates schema | idle → loading → active → complete |
-| 👨‍💻 **Developer** | Implements structure & resolves dependencies | idle → loading → active → complete |
-| 📋 **PM Coordinator** | Organizes tasks & prioritizes workflow | idle → active → complete |
-| 🧠 **Memory Engine** | Indexes into Cognee & syncs storage | idle → loading → active → synchronized |
+### 🧠 Memory Systems
+- Understanding vector embeddings and semantic search
+- Graph database concepts and query patterns
+- Trade-offs between structured and unstructured storage
 
-Each agent broadcasts status in real-time, visible in the **CenterPanel telemetry view**.
+### 📊 Data Pipelines
+- Building robust ETL processes for knowledge extraction
+- Handling heterogeneous data formats
+- Ensuring data consistency across systems
 
----
+### 🔍 Semantic Indexing
+- Implementing retrieval-augmented generation concepts
+- Optimizing embedding quality and retrieval speed
+- Balancing precision and recall in search
 
-## 🔧 Advanced Configuration
+### 🌐 Distributed Architecture
+- Service communication patterns
+- Event-driven architecture design
+- Monitoring and observability practices
 
-### Webhook URLs
-
-**Webhook A (Central Agent)** — n8n project generation workflow:
-```
-POST /webhook/project-generator
-Body: { query, datasetName, apiToken }
-Response: { payload: { summary, files, ... } }
-```
-
-**Webhook B (Memory Retrieval)** — Cognee search & sync:
-```
-POST /webhook/memory-sync
-Body: { query, datasetName }
-Response: [{ search_result: "...", ... }]
-```
-
-### Sandbox Mode
-
-Toggle sandbox mode to test without live webhooks:
-```typescript
-// .env
-VITE_SANDBOX_MODE=true  // Uses mock data generator
-
-// Uses getDynamicMockResponse() for instant testing
-```
+### 🔌 Integration Engineering
+- Working with diverse APIs and SDKs
+- Webhook event handling and security
+- Error handling and recovery strategies
 
 ---
 
-## 🧩 Component Breakdown
-
-### **LeftPanel** — Configuration & Logging
-- API token input
-- Webhook URL configuration
-- Dataset name selector
-- Live console event stream (50 events max)
-- Clear history action
-
-### **CenterPanel** — Chat Interface & Telemetry
-- Message history (user ↔ agent)
-- Input form with suggestions
-- Telemetry node status display
-- Build/memory summary cards
-- Error boundary with recovery hints
-
-### **RightPanel** — Memory Visualization
-- D3.js knowledge graph rendering
-- Component relationship explorer
-- Raw memory text view
-- Manual sync trigger button
-- Memory loading indicator
-
----
-
-## 🔐 Security Considerations
-
-- **API Tokens**: Store securely, rotate periodically
-- **Webhook Auth**: Validate webhook signatures (HMAC)
-- **CORS**: Configure for trusted origins only
-- **Database**: Use row-level security (RLS) in Supabase
-- **Cognee**: Encrypt sensitive embeddings
-
----
-
-## 🚨 Troubleshooting
-
-### Webhook Connection Failed
+## 📁 Repository Structure
 
 ```
-Error: "Failed to establish secure gateway websocket"
-
-Solution:
-1. Verify n8n instance is running: http://localhost:5678
-2. Check ngrok tunnel is active (if using remote)
-3. Validate webhook URLs in .env
-4. Enable VITE_SANDBOX_MODE=true to test UI offline
-```
-
-### Memory Sync Timeout
-
-```
-Error: "Memory retrieval sync returned null response"
-
-Solution:
-1. Check Cognee API is accessible
-2. Verify VITE_COGNEE_API_KEY is set
-3. Check PostgreSQL connection in Supabase
-4. Review n8n Webhook B workflow logs
-```
-
-### Build Output is Empty
-
-```
-Error: "Memory Index Status: Not Indexed"
-
-Solution:
-1. Ensure agent response includes ===FILE: markers
-2. Check buildParser.ts regex patterns match your format
-3. Verify package.json is included in response
-4. Review console logs for parsing errors
+contextos/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard/
+│   │   │   ├── Workflow/
+│   │   │   ├── Graph/
+│   │   │   └── Projects/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   │   ├── api/
+│   │   │   └── websocket/
+│   │   ├── store/
+│   │   ├── types/
+│   │   └── utils/
+│   ├── public/
+│   └── package.json
+│
+├── workflows/
+│   ├── n8n/
+│   │   ├── templates/
+│   │   ├── agents/
+│   │   └── webhooks/
+│   └── schemas/
+│
+├── agents/
+│   ├── generator/
+│   ├── extractor/
+│   └── indexer/
+│
+├── backend/
+│   ├── api/
+│   ├── supabase/
+│   │   ├── migrations/
+│   │   └── functions/
+│   └── cognee/
+│       ├── embeddings/
+│       ├── graphs/
+│       └── queries/
+│
+├── scripts/
+├── docs/
+├── tests/
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## 🎨 UI Customization
+## 🎬 Demo Video
 
-### Color Scheme
-- **Primary**: `#5ed29c` (Emerald)
-- **Background**: `#070b0a` (Deep Navy)
-- **Accent**: `#e1f5fe` (Light Blue)
+🎥 **[Watch the ContextOS Demo](https://youtu.be/demo-video-link)**
 
-Modify in tailwind config or override CSS variables in `src/index.css`.
-
-### Theme Toggle (Future)
-Plans to add dark/light mode toggle in header.
+*Coming soon – See the full workflow in action!*
 
 ---
 
-## 📊 Performance Metrics
+## 🙏 Acknowledgements
 
-Expected performance on standard hardware:
-
-| Operation | Typical Duration |
-|-----------|------------------|
-| Project Generation | 2-5 seconds |
-| Architecture Extraction | 1-2 seconds |
-| Cognee Indexing | 1-3 seconds |
-| Memory Retrieval Query | 500-1500ms |
-| Graph Visualization Render | 200-500ms |
-
----
-
-## 🔮 Roadmap
-
-### Phase 1 (Current) ✅
-- ✅ Multi-agent orchestration
-- ✅ Dual-webhook architecture
-- ✅ Semantic memory persistence
-- ✅ Real-time telemetry dashboard
-
-### Phase 2 (Planned) 🎯
-- 🔄 GitHub/GitLab integration for live repo sync
-- 🔄 Advanced graph algorithms (pattern detection)
-- 🔄 Collaborative workspace (multi-user)
-- 🔄 IDE plugin (VS Code)
-
-### Phase 3 (Aspirational) 🌟
-- 🌟 Fine-tuned embedding models
-- 🌟 Predictive architecture suggestions
-- 🌟 Anomaly detection in codebases
-- 🌟 Cross-project knowledge federation
-
----
-
-## 📚 Learning Resources
-
-Concepts used in ContextOS:
-
-- [**Multi-Agent Orchestration**](https://n8n.io/docs/workflows/) — n8n workflows
-- [**Vector Embeddings**](https://cognee.ai/docs/) — Cognee semantic search
-- [**Webhook Architecture**](https://en.wikipedia.org/wiki/Webhook) — Event-driven systems
-- [**Knowledge Graphs**](https://en.wikipedia.org/wiki/Knowledge_graph) — Graph databases
-- [**React Patterns**](https://react.dev/) — Hooks, custom components
-- [**TypeScript Strict Mode**](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html) — Type safety
-
----
-
-## 🎓 What We Learned
-
-Building ContextOS required deep expertise in:
-
-✅ **Distributed Workflows** — State management across async services  
-✅ **Memory Systems** — Persistent knowledge graphs and vector search  
-✅ **Data Pipelines** — ETL for heterogeneous agent outputs  
-✅ **Real-Time UX** — Telemetry dashboards and WebSocket patterns  
-✅ **Error Recovery** — Resilient webhook handling and graceful degradation  
-✅ **Type Safety** — Strict TypeScript for complex domain models  
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Areas of interest:
-
-- 🐛 Bug reports & fixes
-- ✨ UI/UX improvements
-- 📚 Documentation enhancements
-- 🧪 Test coverage
-- 🔌 New agent integrations
-- 📈 Performance optimizations
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+- **[React](https://reactjs.org/)** – The UI framework powering our dashboard
+- **[n8n](https://n8n.io/)** – The workflow automation engine orchestrating our agents
+- **[Supabase](https://supabase.com/)** – The PostgreSQL platform storing our project knowledge
+- **[Cognee](https://cognee.ai/)** – The semantic memory system indexing our knowledge graph
+- **All open-source contributors** who make tools like these possible
 
 ---
 
 ## 📄 License
 
-This project is [MIT licensed](LICENSE) — freely usable for personal and commercial projects.
+This project is [MIT licensed](LICENSE).
 
 ---
 
-## 👤 Credits
+## 🤝 Contributing
 
-**Built with ❤️ for the Hangover hackathon**
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-- **Creator**: Yug Agrawal ([@YUG634](https://github.com/YUG634))
+---
+
+## 📬 Contact
+
+- **Project Lead**: Yug Agrawal
 - **Email**: yugagrawalmng@gmail.com
-- **LinkedIn**: [yug-agrawal](https://www.linkedin.com/in/yug-agrawal-101bb11a0)
+- **GitHub**: YUG634
+- **Linkedin**: www.linkedin.com/in/yug-agrawal-101bb11a0
 
-### Powered By
-
-- [**React**](https://react.dev/) — The UI foundation
-- [**n8n**](https://n8n.io/) — Workflow orchestration engine
-- [**Supabase**](https://supabase.com/) — PostgreSQL backend
-- [**Cognee**](https://cognee.ai/) — Semantic knowledge graphs
-- [**Vite**](https://vitejs.dev/) — Next-gen build tool
 
 ---
 
 <div align="center">
-
-### 🌟 Star this repo if ContextOS helps you manage AI-generated projects!
-
-[⬆ back to top](#contextos)
-
+  <b>Built for the Hangover hackathon with ❤️ by Yug Agrawal </b>
 </div>
